@@ -37,5 +37,8 @@ Volt_EL = np.array([V40, V50, V60, V70])
 NumJunc = np.array([40, 50, 60, 70])
 
 #### run calculation
-EJ_Calc(Current, Volt_EJ, widths, Voltages_2 = Volt_EJ_2)
+EJ_Calc(Current, Volt_EJ, widths, Voltages_2 = Volt_EJ_2, FigNum = 1)
+
+EJ_Calc(Current, Volt_EL, NumJunc, FigNum = 2, EL = True)
+
 
