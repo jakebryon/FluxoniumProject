@@ -32,7 +32,9 @@ def EJ_Calc_Plot(
         Voltages_2 = 0, # option for averaging with extra data
         FigNum = 1,  # number of figure created
         FigName = '', # name of plotted figure
-        EL = False # tells if doing calcuation for EL not EJ
+        EL = False, # tells if doing calcuation for EL not EJ
+        Desired_Energy = 0.0 # desired EJ/EL value, if this number is 
+                        # given then numbers are given to achieve this
         ):
 
     NumVolts = len(Voltages)
@@ -61,6 +63,19 @@ def EJ_Calc_Plot(
 
     Energies_Fit_Energies = (Energies_Fit_params[0]*Energies_Fit_widths
                             + Energies_Fit_params[1])
+
+    # if given a desired Energy, find width or UnderCut
+    if Desired_Energy != 0.0:
+
+        Desired_Fit = np.array([
+            Energies_Fit_params[0], Energies_Fit_params[1] - Desired_Energy])
+    
+        Desired_Num = np.roots(Desired_Fit)
+        Desired_var = 'width'
+        if EL:
+            Desired_var = 'Number of UnderCuts'
+
+        print('Desired '+ Desired_var + ': ' + str(Desired_Num))
 
     # ploting data
     plt.figure(FigNum)
@@ -94,8 +109,5 @@ def Energy_Stats_Plot(Energy_List, width):
         label = Energy_StatsStr
         )
     plt.legend()
-
-
-
 
 
