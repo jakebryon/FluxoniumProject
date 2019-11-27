@@ -33,12 +33,26 @@ V50 = np.array([2.56, 4.7, 7.8])
 V60 = np.array([3.0, 5.6, 9.3])
 V70 = np.array([3.4, 6.4, 10.5])
 
+V40_2 = np.array([1.9, 3.6, 6.0])
+V50_2 = np.array([2.5, 4.7, 7.8])
+V60_2 = np.array([2.9, 5.6, 9.4])
+V70_2 = np.array([3.4, 6.5, 11.0])
+
+
 Volt_EL = np.array([V40, V50, V60, V70])
+Volt_EL_2 = np.array([V40_2, V50_2, V60_2, V70_2])
 NumJunc = np.array([40, 50, 60, 70])
 
 #### run calculation
-EJ_Calc(Current, Volt_EJ, widths, Voltages_2 = Volt_EJ_2, FigNum = 1)
+EJ_Calc_Plot(Current, Volt_EJ, widths, 
+    Voltages_2 = Volt_EJ_2, 
+    FigNum = 1,
+    FigName = 'FDH03_C3 Wittness Junctions: EJ')
 
-EJ_Calc(Current, Volt_EL, NumJunc, FigNum = 2, EL = True)
+EJ_Calc_Plot(Current, Volt_EL, NumJunc,
+    Voltages_2 = Volt_EL_2, 
+    FigNum = 2, 
+    FigName = 'FDH03_C3 Wittness Junctions EL',
+    EL = True)
 
-
+plt.show()

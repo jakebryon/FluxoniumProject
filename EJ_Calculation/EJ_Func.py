@@ -5,19 +5,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# function for just calculating EJ
 def EJ_Calc(
-        Current, 
-        Voltages, # array containing lists of measured voltages
-        widths,  # width of junction or number of undercuts
-        Voltages_2 = 0, # option for averaging with extra data
-        FigNum = 1,  # number of figure created
-        EL = False # tells if doing calcuation for EL not EJ
-        ):
+    Current, # array of currents used for finding Voltages
+    Voltages, # measured volttages for finding resistances
+    ):
     # create empty list to fill in with resistances
     NumVolts = len(Voltages)
     Resistance_List = np.zeros(NumVolts)
-
-    # Voltages_2 are the volttages from a second set of witnesses use for stats
 
     # find energies for different widths
     for i in range(NumVolts):
@@ -26,6 +21,25 @@ def EJ_Calc(
         Resistance_List[i] = 1/EJ_Fit_Slope
 
     Energies_List = 132.6/Resistance_List
+    return Energies_List
+
+
+# function for calculating and plotting Data
+def EJ_Calc_Plot(
+        Current, 
+        Voltages, # array containing lists of measured voltages
+        widths,  # width of junction or number of undercuts
+        Voltages_2 = 0, # option for averaging with extra data
+        FigNum = 1,  # number of figure created
+        FigName = '', # name of plotted figure
+        EL = False # tells if doing calcuation for EL not EJ
+        ):
+
+    NumVolts = len(Voltages)
+    Energies_List = EJ_Calc(Current, Voltages)
+
+    # setting extra range for EJ
+    ext_range = 50
 
     # if there is a second set of juncion measurements, find average
     if isinstance(Voltages_2, (list, tuple, np.ndarray)): 
@@ -39,11 +53,15 @@ def EJ_Calc(
         Energies_List_2 = 132.6/Resistance_List_2
         Energies_List = (Energies_List + Energies_List_2)/2.0
 
+        # setting fitting extra range for EL
+        ext_range = 10
 
+
+    # preform fit of energies
     Energies_Fit_params = np.polyfit(widths, Energies_List, 1)
     Energies_Fit_widths = np.linspace(
-                                    widths[0] - 50, 
-                                    widths[-1] +50,
+                                    widths[0] - ext_range, 
+                                    widths[-1] + ext_range,
                                     100
                                     )
 
@@ -57,5 +75,5 @@ def EJ_Calc(
     if EL:
         plt.xlabel('Number of undercuts')
     plt.ylabel('Energy (GHz)')
-    plt.show()
+    plt.title(FigName)
 
