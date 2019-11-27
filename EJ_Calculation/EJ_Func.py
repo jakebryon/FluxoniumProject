@@ -43,17 +43,11 @@ def EJ_Calc_Plot(
 
     # if there is a second set of juncion measurements, find average
     if isinstance(Voltages_2, (list, tuple, np.ndarray)): 
-        Resistance_List_2 = np.zeros(NumVolts)
-
-        for i in range(NumVolts):
-            EJ_Fit = np.polyfit(Voltages_2[i], Current, 1)
-            EJ_Fit_Slope = EJ_Fit[0]
-            Resistance_List_2[i] = 1/EJ_Fit_Slope
-
-        Energies_List_2 = 132.6/Resistance_List_2
+        
+        Energies_List_2 = EJ_Calc(Current, Voltages_2)
+        ### average together both lists of energies
         Energies_List = (Energies_List + Energies_List_2)/2.0
-
-        # setting fitting extra range for EL
+        ### setting fitting extra range for EL
         ext_range = 10
 
 
@@ -68,6 +62,7 @@ def EJ_Calc_Plot(
     Energies_Fit_Energies = (Energies_Fit_params[0]*Energies_Fit_widths
                             + Energies_Fit_params[1])
 
+    # ploting data
     plt.figure(FigNum)
     plt.plot(widths, Energies_List, 'o')
     plt.plot(Energies_Fit_widths, Energies_Fit_Energies)
@@ -76,4 +71,31 @@ def EJ_Calc_Plot(
         plt.xlabel('Number of undercuts')
     plt.ylabel('Energy (GHz)')
     plt.title(FigName)
+
+def Energy_Stats(Energy_List):
+    # gives array of avg, std, and string describing
+    Energy_std = np.std(Energy_List)
+    Energy_avg = np.mean(Energy_List)
+    
+    Energy_StatsStr = ('EJ = ' + 
+        '{0:.2f}'.format(Energy_avg) + 
+        u" \u00B1" + ' ' 
+        '{0:.2f}'.format(Energy_std) 
+        )
+    return Energy_avg, Energy_std, Energy_StatsStr
+
+def Energy_Stats_Plot(Energy_List, width):
+    # plots error bar on an exisiting plot
+    Energy_avg, Energy_std, Energy_StatsStr = Energy_Stats(Energy_List)
+
+    plt.errorbar(width, Energy_avg, 
+        yerr = Energy_std, 
+        fmt = 'go',
+        label = Energy_StatsStr
+        )
+    plt.legend()
+
+
+
+
 
