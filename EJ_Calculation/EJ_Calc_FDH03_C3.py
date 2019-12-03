@@ -37,12 +37,12 @@ EJs_width = 350.0
 EJs_Energy_avg, EJs_Energy_std, EJs_StatsStr = Energy_Stats(EJs_Energy_List)
 
 ## Wittness EL values
-V40 = np.array([2.0, 3.75, 6.2])
+#V40 = np.array([2.0, 3.75, 6.2])
 V50 = np.array([2.56, 4.7, 7.8])
 V60 = np.array([3.0, 5.6, 9.3])
 V70 = np.array([3.4, 6.4, 10.5])
 
-V40_2 = np.array([1.9, 3.6, 6.0])
+#V40_2 = np.array([1.9, 3.6, 6.0])
 V50_2 = np.array([2.5, 4.7, 7.8])
 V60_2 = np.array([2.9, 5.6, 9.4])
 V70_2 = np.array([3.4, 6.5, 11.0])
@@ -51,10 +51,15 @@ V70_2 = np.array([3.4, 6.5, 11.0])
 EL_1_Volt = np.array([7.0, 12.5, 20.3])
 EL_2_Volt = np.array([7.1, 13.4, 22.4])
 
-Volt_EL = np.array([V40, V50, V60, V70, EL_1_Volt])
-Volt_EL_2 = np.array([V40_2, V50_2, V60_2, V70_2, EL_2_Volt])
+#Volt_EL = np.array([V40, V50, V60, V70, EL_1_Volt])
+#Volt_EL_2 = np.array([V40_2, V50_2, V60_2, V70_2, EL_2_Volt])
+#NumJunc = np.array([40, 50, 60, 70, 122])
 
-NumJunc = np.array([40, 50, 60, 70, 122])
+Volt_EL = np.array([V50, V60, V70, EL_1_Volt])
+Volt_EL_2 = np.array([V50_2, V60_2, V70_2, EL_2_Volt])
+NumJunc = np.array([50, 60, 70, 122])
+
+
 
 # finding Energy of EL junction, UnderCuts = 120
 EL_3_Volt = np.array([6.0, 11.4, 18.8])
