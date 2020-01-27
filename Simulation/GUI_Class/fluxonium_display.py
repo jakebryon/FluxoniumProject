@@ -15,22 +15,26 @@ import scqubits as qubit
 
 class Display:
     ## initialize object by creating a default fluxonium object with
+    # note: all energies are in GHz
     # input parameters
     # @param self the object pointer
     # @param EJ:float josphson junction energy
     # @param EC:float charging energy 
     # @param EL:float inductive energy
+    # @param cav_freq: float cavity frequency
     # @param flux:float external magnetic flux
     # @param Num_levels:int number of levels to be in the fluxonium object
     # @parm fluxonium: qubit object of the simulated fluxonium object 
 
-    def __init__(self, EJ, EC, EL, flux, Num_levels):
+    def __init__(self, EJ, EC, EL, cav_freq, flux, Num_levels):
         ### EJ: float of JJ energy
         self.EJ = EJ
         ### EC: float of charging energy
         self.EC = EC
         ### EL: float of inductive energy
         self.EL = EL
+        ### cav_freq: float of cavity frequency
+        self.cav_freq = cav_freq
         ### flux: float of external flux
         self.flux = flux
         ### Num_levels: int of number of levels in model
@@ -71,22 +75,28 @@ class Display:
 
         # placing EJ text entry
         axtext_EJ = plt.axes([0.05, 0.80, 0.06, 0.05])
-        self.text_EJ = TextBox(axtext_EJ, 'EJ:', initial = '8.34')
+        self.text_EJ = TextBox(axtext_EJ, 'EJ:', initial = str(self.EJ))
         self.text_EJ.on_submit(self.EJ_change)
 
         # placing EC text entry
         axtext_EC = plt.axes([0.05, 0.70, 0.06, 0.05])
-        self.text_EC = TextBox(axtext_EC, 'EC:', initial = '1.15')
+        self.text_EC = TextBox(axtext_EC, 'EC:', initial = str(self.EC))
         self.text_EC.on_submit(self.EC_change)
 
         # placing EL text entry
         axtext_EL = plt.axes([0.05, 0.60, 0.06, 0.05])
-        self.text_EL = TextBox(axtext_EL, 'EL:', initial = '0.45')
+        self.text_EL = TextBox(axtext_EL, 'EL:', initial = str(self.EL))
         self.text_EL.on_submit(self.EL_change)
 
+        # placing cavity frequencu text entry
+        axtext_cav = plt.axes([0.05, 0.50, 0.06, 0.05])
+        self.text_cav = TextBox(axtext_cav, 'cavity:', 
+            initial = str(self.cav_freq))
+        self.text_cav.on_submit(self.cavity_change)
+
         # placing phi text entry
-        axtext_phi = plt.axes([0.05, 0.50, 0.06, 0.05])
-        self.text_phi = TextBox(axtext_phi, 'phi_ext', initial = '0.75')
+        axtext_phi = plt.axes([0.05, 0.40, 0.06, 0.05])
+        self.text_phi = TextBox(axtext_phi, 'phi_ext', initial = str(self.flux))
         self.text_phi.on_submit(self.phi_change)
 
 
@@ -146,6 +156,13 @@ class Display:
 
     ## method to change the value for EL
     #
+    def cavity_change(self, text):
+       self.cav_freq = float(text)
+       self.update()
+
+
+    ## method to change the value for EL
+    #
     def phi_change(self, text):
        self.flux = float(text)
        self.fluxonium.flux = self.flux
@@ -172,6 +189,7 @@ display = Display(
     EJ = 8.34,
     EC = 1.15,
     EL = 0.45,
+    cav_freq = 6.0,
     flux = 0.75, 
     Num_levels = 5
     )
