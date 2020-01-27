@@ -55,6 +55,7 @@ class Display:
             cutoff = 100
             )
 
+
     ## method to place down all the buttons/text entry boxes
     #
     def place_buttons(self):
@@ -76,17 +77,17 @@ class Display:
         # placing EC text entry
         axtext_EC = plt.axes([0.05, 0.70, 0.06, 0.05])
         self.text_EC = TextBox(axtext_EC, 'EC:', initial = '1.15')
-#        self.text_EC.on_submit(self.EC_change)
+        self.text_EC.on_submit(self.EC_change)
 
         # placing EL text entry
         axtext_EL = plt.axes([0.05, 0.60, 0.06, 0.05])
         self.text_EL = TextBox(axtext_EL, 'EL:', initial = '0.45')
-#        self.text_EL.on_submit(self.EL_change)
+        self.text_EL.on_submit(self.EL_change)
 
         # placing phi text entry
         axtext_phi = plt.axes([0.05, 0.50, 0.06, 0.05])
         self.text_phi = TextBox(axtext_phi, 'phi_ext', initial = '0.75')
-#        self.text_phi.on_submit(self.phi_change)
+        self.text_phi.on_submit(self.phi_change)
 
 
     ## method to plot the energy levels vs external flux
@@ -124,8 +125,32 @@ class Display:
     def EJ_change(self, text):
        self.EJ = float(text)
        self.fluxonium.EJ = self.EJ
-
        self.update()
+
+
+    ## method to change the value for EC
+    #
+    def EC_change(self, text):
+       self.EC = float(text)
+       self.fluxonium.EC = self.EC
+       self.update()
+
+
+    ## method to change the value for EL
+    #
+    def EL_change(self, text):
+       self.EL = float(text)
+       self.fluxonium.EC = self.EL
+       self.update()
+
+
+    ## method to change the value for EL
+    #
+    def phi_change(self, text):
+       self.flux = float(text)
+       self.fluxonium.flux = self.flux
+       self.update()
+
 
     ## method to update all running plots
     #
@@ -133,11 +158,11 @@ class Display:
         if self.flux_sweep == True:
             self.flux_sweep_plot(plot_num = self.flux_sweep_num)
 
+
     ## method to show plots
     #
     def show(self):
         plt.show()
-
 
 
 #########################################################
