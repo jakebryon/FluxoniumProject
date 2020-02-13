@@ -24,9 +24,20 @@ class Display:
     # @param cav_freq: float cavity frequency
     # @param flux:float external magnetic flux
     # @param Num_levels:int number of levels to be in the fluxonium object
+    # @pram Num_sum: int number of levels used in sum calculations
     # @parm fluxonium: qubit object of the simulated fluxonium object 
 
-    def __init__(self, EJ, EC, EL, cav_freq, flux, Num_levels):
+    def __init__(
+            self, 
+            EJ, 
+            EC, 
+            EL, 
+            cav_freq, 
+            flux, 
+            Num_levels, 
+            Num_sum = 10
+            ):
+
         ### EJ: float of JJ energy
         self.EJ = EJ
         ### EC: float of charging energy
@@ -39,6 +50,8 @@ class Display:
         self.flux = flux
         ### Num_levels: int of number of levels in model
         self.Num_levels = Num_levels
+        ### Num_sum: int of the number of levels to be used in calculations
+        self.Num_sum = Num_sum
 
         self.fig, self._subplots_temp = ( 
             plt.subplots(2,2, figsize = [14.0, 5.0]) )
@@ -71,7 +84,7 @@ class Display:
             wspace = 0.2,
             hspace = 0.3,
             )
-        self.fig.suptitle('Alira Laser Data Plotting')
+        self.fig.suptitle('Fluxonium Interactive Plotting')
 
         # placing EJ text entry
         axtext_EJ = plt.axes([0.05, 0.80, 0.06, 0.05])
@@ -100,9 +113,9 @@ class Display:
         self.text_phi.on_submit(self.phi_change)
 
 
-    ## method to plot the energy levels vs external flux
+    ## method to plot the matrix elements vs external flux
     #
-    def flux_sweep_plot(self, plot_num = 0):
+    def Flux_sweep_plot(self, plot_num = 0):
         # if method is called set to true
         self.flux_sweep = True
         # keep track of plot number
@@ -124,11 +137,134 @@ class Display:
                 '-'
                 )
 
+        # plot cavity frequency
+
         self.subplots[plot_num].set_xlabel(r'$\varphi_{ext}/2\pi$')
         self.subplots[plot_num].set_ylabel('E - E(0) (GHz)')
 #        self.subplots[plot_num].legend(legend)
         self.subplots[plot_num].set_title(
             'Energy Levels vs. ' + r'$\varphi_{ext}/2\pi$')
+
+
+    ## method to plot the energy levels vs external flux
+    # @param coupling_level level for which elements are calculted with
+    # 
+    def g_mat_plot(self, 
+            plot_num = 0, 
+            coupling_level = 0, 
+            beta_phi = 0.2
+            ):
+        # if method is called set to true
+        self.g_mat_bool = True
+        # keep track of plot number
+        self.g_mat_num = plot_num
+
+        self.subplots[plot_num].cla()
+        phi_ext = np.linspace(0.0, 1.0, 100)
+        
+        g_mat_array = self.fluxonium.get_matelements_vs_paramvals(
+            operator = 'n_operator',
+            param_name = 'flux',
+            param_vals = phi_ext,
+            evals_count = self.Num_levels
+            )
+
+        # g_const is the coupling constant factor
+        g_const = self.cav_freq * beta_phi * (2.0/np.pi)
+
+        g_val_array = np.zeros([len(phi_ext), self.Num_levels])
+        for i in range(0, self.Num_levels):
+            g_val_array[:, i] = np.abs(
+                g_mat_array.matrixelem_table[:,coupling_level,i] )
+            if i == coupling_level: 
+                g_val_array[:,i] = np.zeros(len(phi_ext))
+
+        g_val_array = g_val_array*g_const
+
+        for i in range(0, self.Num_levels):
+            self.subplots[plot_num].plot(
+                g_mat_array.param_vals,
+                g_val_array[:,i] * 1e3, # MHz units
+                '-'
+                )
+
+        self.subplots[plot_num].set_xlabel(r'$\varphi_{ext}/2\pi$')
+        self.subplots[plot_num].set_ylabel('matix element (MHz)')
+#        self.subplots[plot_num].legend(legend)
+        self.subplots[plot_num].set_title(
+            'coupling level ' + str(coupling_level))
+
+
+    ## method to plot Raman values against flux
+    #
+    def Raman_plot(self, plot_num = 0):
+        # if method is called set to true
+        self.Raman_bool = True
+        # keep track of plot number
+        self.Raman_plot_num = plot_num
+
+        self.subplots[plot_num].cla()
+        flux_points = 100 # number of flux points
+        phi_ext = np.linspace(0.0, 1.0, flux_points)
+
+        raman_range = np.zeros(flux_points)
+        
+        for i in range(0,flux_points):
+            self.fluxonium.flux = phi_ext[i]
+            raman_range[i] = np.abs(self.RamanVal(
+                drive_freq = 0.05,
+                beta_phi = 0.2,
+                delta_lil = 0.005
+                )) * 1e3 # MHz units
+
+        self.subplots[plot_num].plot(phi_ext, raman_range, '-')
+
+        self.subplots[plot_num].set_xlabel(r'$\varphi_{ext}/2\pi$')
+        self.subplots[plot_num].set_ylabel('Raman Frequency (MHz)')
+        self.subplots[plot_num].set_title(
+            'Raman Frequency Plot')
+        self.subplots[plot_num].set_yscale('log')
+
+
+    ## method to calculte Raman frequency 
+    # @param delta_lil: small detuning
+    # @param beta_phi: beta parameter for coupling charactorization
+    # 
+    def RamanVal(self, 
+            drive_freq = 0.05,
+            delta_lil = 0.0,
+            beta_phi = 0.2,
+            ):
+        # find dipole matrix
+        g_mat = self.fluxonium.matrixelement_table(
+            'n_operator',
+            evals_count = self.Num_sum
+            )
+
+        g_mat = np.abs(g_mat)
+
+        Energies = self.fluxonium.eigenvals(self.Num_sum)
+        Energies = Energies - Energies[0]
+        deltas = Energies - self.cav_freq
+
+        # g_const is the coupling constant factor
+        g_const = self.cav_freq * beta_phi * (2.0/np.pi)
+        # drive is the drive factor
+        drive = drive_freq / g_mat[0, 2]
+
+        # arrays containing all transition values
+        g_vals = g_const * g_mat[:, 1]
+        omega_vals = drive * g_mat[0, :] 
+
+        raman_vals = np.zeros(self.Num_sum)
+        for i in range(1, self.Num_sum):
+            raman_vals[i] = (
+                g_vals[i] * omega_vals[i] / ((deltas[i] - delta_lil)*2) 
+                )
+
+        omega_raman = np.sum(raman_vals)
+
+        return np.abs(omega_raman)
 
     ## method to change the value for EJ, used in text box input
     #
@@ -173,8 +309,11 @@ class Display:
     #
     def update(self):
         if self.flux_sweep == True:
-            self.flux_sweep_plot(plot_num = self.flux_sweep_num)
-
+            self.Flux_sweep_plot(plot_num = self.flux_sweep_num)
+        if self.Raman_bool == True:
+            self.Raman_plot(plot_num = self.Raman_plot_num)
+        if self.g_mat_bool == True:
+            self.g_mat_plot(plot_num = self.g_mat_num)
 
     ## method to show plots
     #
@@ -191,10 +330,14 @@ display = Display(
     EL = 0.45,
     cav_freq = 6.0,
     flux = 0.75, 
-    Num_levels = 5
+    Num_levels = 5,
+    Num_sum = 10
     )
 
 display.place_buttons()
-display.flux_sweep_plot()
-display.show()
+display.Flux_sweep_plot(plot_num = 0)
+display.Raman_plot(plot_num = 1)
+display.g_mat_plot(plot_num = 2, coupling_level = 0)
+display.g_mat_plot(plot_num = 3, coupling_level = 1)
 
+display.show()
