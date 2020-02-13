@@ -35,7 +35,8 @@ class Display:
             cav_freq, 
             flux, 
             Num_levels, 
-            Num_sum = 10
+            Num_sum = 10,
+            Num_plots = 4
             ):
 
         ### EJ: float of JJ energy
@@ -52,16 +53,36 @@ class Display:
         self.Num_levels = Num_levels
         ### Num_sum: int of the number of levels to be used in calculations
         self.Num_sum = Num_sum
+        ### Num_plots: int of the number plots on figure
+        self.Num_plots = Num_plots
 
-        self.fig, self._subplots_temp = ( 
-            plt.subplots(2,2, figsize = [14.0, 5.0]) )
-        #  turn format of subplots into array for simplicity 
-        self.subplots = np.array([
-           self._subplots_temp[0,0],
-           self._subplots_temp[0,1],
-           self._subplots_temp[1,0],
-           self._subplots_temp[1,1]
-           ])
+
+        # creating subplots given number requested
+        # for 1-3 plots, just lay out in a row
+        if self.Num_plots == 1:
+            self.fig, self.subplots = ( 
+                plt.subplots(1,1, figsize = [14.0, 5.0]) )
+            ## subplots: list containing all subplots of the figure
+            self.subplots = [self.subplots]
+
+        elif self.Num_plots == 2:
+            self.fig, self.subplots = ( 
+                plt.subplots(1,2, figsize = [14.0, 5.0]) )
+
+        elif self.Num_plots == 3:
+            self.fig, self.subplots = ( 
+                plt.subplots(1,3, figsize = [14.0, 5.0]) )
+
+        elif self.Num_plots == 4: 
+            self.fig, self._subplots_temp = ( 
+                plt.subplots(2,2, figsize = [14.0, 5.0]) )
+            #  turn format of subplots into array for simplicity 
+            self.subplots = np.array([
+               self._subplots_temp[0,0],
+               self._subplots_temp[0,1],
+               self._subplots_temp[1,0],
+               self._subplots_temp[1,1]
+               ])
 
         ## fluxonium: qubit object of the fluxonium
         self.fluxonium = qubit.Fluxonium(
@@ -331,7 +352,8 @@ display = Display(
     cav_freq = 6.0,
     flux = 0.75, 
     Num_levels = 5,
-    Num_sum = 10
+    Num_sum = 10,
+    Num_plots = 4
     )
 
 display.place_buttons()
