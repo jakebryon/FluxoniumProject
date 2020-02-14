@@ -10,6 +10,7 @@ import os
 from datetime import date
 import csv
 from analysis import *
+import scqubits as qubit
 
 
 ## Display class handles all plotting and interactions
