@@ -93,6 +93,12 @@ class Display:
             cutoff = 100
             )
 
+        ## set all booleans to false
+        self.flux_sweep = False
+        self.g_mat_bool = False
+        self.wavefunciton_bool = False
+        self.Raman_bool = False
+
 
     ## method to place down all the buttons/text entry boxes
     #
@@ -197,6 +203,7 @@ class Display:
         for i in range(0, self.Num_levels):
             g_val_array[:, i] = np.abs(
                 g_mat_array.matrixelem_table[:,coupling_level,i] )
+            # zero out the self couplings
             if i == coupling_level: 
                 g_val_array[:,i] = np.zeros(len(phi_ext))
 
@@ -211,9 +218,65 @@ class Display:
 
         self.subplots[plot_num].set_xlabel(r'$\varphi_{ext}/2\pi$')
         self.subplots[plot_num].set_ylabel('matix element (MHz)')
-#        self.subplots[plot_num].legend(legend)
         self.subplots[plot_num].set_title(
             'coupling level ' + str(coupling_level))
+
+
+    ## method to plot wave functions on the hamiltonian
+    # @param plot_num int for which plot to be displayed on
+    # 
+    def wavefunction_plot(self, 
+            plot_num = 0, 
+            phi_limit = 3
+            ):
+        # if method is called set to true
+        self.wavefunction_bool = True
+        # keep track of plot number
+        self.wavefunction_num = plot_num
+
+        self.subplots[plot_num].cla()
+
+        eigen_vals, eigen_vec = (
+            self.fluxonium.eigensys(evals_count = self.Num_levels) )
+        esys = (
+            self.fluxonium.eigensys(evals_count = self.Num_levels) )
+
+        wavefunc_array = np.array([0,0,0,0,0,0], dtype = object)
+        wavefunc_array[0] = self.fluxonium.wavefunction(esys)
+
+        for i in range(0, self.Num_levels):
+            wavefunc_array[i] = self.fluxonium.wavefunction( 
+                esys = esys,
+                which = i,
+                phi_range = (-phi_limit*np.pi, phi_limit*np.pi)
+#                100
+                )
+        # plot wavefunctions
+        for i in range(0, self.Num_levels):
+            wavefunc = wavefunc_array[i]
+            energy_scaled = eigen_vals[i] - eigen_vals[0]
+            self.subplots[plot_num].plot(
+                wavefunc.basis_labels / np.pi,
+                wavefunc.amplitudes + energy_scaled, 
+                '-'
+                )
+
+        # plot potential
+        phi_range = np.linspace(-phi_limit*np.pi, phi_limit*np.pi, 500)
+        potential = np.zeros(len(phi_range))
+        for i in range(0, len(phi_range)):
+            potential[i] = self.fluxonium.potential(phi_range[i])
+
+        self.subplots[plot_num].plot(
+            phi_range / np.pi,
+            potential,
+            'k-'
+            )
+            
+
+        self.subplots[plot_num].set_xlabel(r'$\varphi / \pi$')
+        self.subplots[plot_num].set_ylabel('Energy (GHz)')
+        self.subplots[plot_num].set_title('wave functions')
 
 
     ## method to plot Raman values against flux
@@ -335,6 +398,8 @@ class Display:
             self.Raman_plot(plot_num = self.Raman_plot_num)
         if self.g_mat_bool == True:
             self.g_mat_plot(plot_num = self.g_mat_num)
+        if self.wavefunction_bool == True:
+            self.wavefunction_plot(plot_num = self.wavefunction_num)
 
     ## method to show plots
     #
@@ -353,13 +418,15 @@ display = Display(
     flux = 0.75, 
     Num_levels = 5,
     Num_sum = 10,
-    Num_plots = 4
+    Num_plots = 2
     )
 
 display.place_buttons()
+
 display.Flux_sweep_plot(plot_num = 0)
-display.Raman_plot(plot_num = 1)
-display.g_mat_plot(plot_num = 2, coupling_level = 0)
-display.g_mat_plot(plot_num = 3, coupling_level = 1)
+display.wavefunction_plot(plot_num = 1)
+### display.Raman_plot(plot_num = 0)
+### display.g_mat_plot(plot_num = 2, coupling_level = 0)
+### display.g_mat_plot(plot_num = 3, coupling_level = 1)
 
 display.show()
