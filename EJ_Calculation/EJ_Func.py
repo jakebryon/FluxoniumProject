@@ -6,7 +6,22 @@ import matplotlib.pyplot as plt
 
 
 # function for just calculating EJ
-def EJ_Calc(
+def EJ_Calc_basic(
+    Current, # array of currents used for finding Voltages
+    Voltages, # measured volttages for finding resistances
+    ):
+    # create empty list to fill in with resistances
+
+    Res = (Voltages[1] - Voltages[0])/(Current[1] - Current[0])
+
+    print('basic calculation of resistance in kOhms')
+    print(Res)
+    Energy = 132.6/Res
+    return Energy
+
+
+# function for calculating resitances
+def Res_Calc(
     Current, # array of currents used for finding Voltages
     Voltages, # measured volttages for finding resistances
     ):
@@ -20,6 +35,16 @@ def EJ_Calc(
         EJ_Fit_Slope = EJ_Fit[0]
         Resistance_List[i] = 1/EJ_Fit_Slope
 
+    return Resistance_List
+
+
+# function for just calculating EJ
+def EJ_Calc(
+    Current, # array of currents used for finding Voltages
+    Voltages, # measured volttages for finding resistances
+    ):
+    Resistance_List = Res_Calc(Current, Voltages) 
+    
     Energies_List = 132.6/Resistance_List
     return Energies_List
 
@@ -44,7 +69,8 @@ def EJ_Calc_Plot(
     ext_range = 50
 
     # if there is a second set of juncion measurements, find average
-    if isinstance(Voltages_2, (list, tuple, np.ndarray)): 
+    if isinstance(Voltages_2, np.ndarray): 
+        print('test')
         
         Energies_List_2 = EJ_Calc(Current, Voltages_2)
         ### average together both lists of energies
@@ -68,19 +94,22 @@ def EJ_Calc_Plot(
     if Desired_Energy != 0.0:
 
         Desired_Fit = np.array([
-            Energies_Fit_params[0], Energies_Fit_params[1] - Desired_Energy])
-    
+            Energies_Fit_params[0], 
+            Energies_Fit_params[1] - Desired_Energy])
+        
         Desired_Num = np.roots(Desired_Fit)
         Desired_var = 'width'
         if EL:
             Desired_var = 'Number of UnderCuts'
-
+    
         print('Desired '+ Desired_var + ': ' + str(Desired_Num))
+
 
     # ploting data
     plt.figure(FigNum)
     plt.plot(widths, Energies_List, 'o')
-    plt.plot(Energies_Fit_widths, Energies_Fit_Energies)
+    if not EL:
+        plt.plot(Energies_Fit_widths, Energies_Fit_Energies)
     plt.xlabel('Junction widths')
     if EL:
         plt.xlabel('Number of undercuts')

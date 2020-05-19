@@ -10,7 +10,6 @@ from matplotlib.widgets import TextBox, Button
 import os
 from datetime import date
 import csv
-from analysis import *
 import scqubits as qubit
 
 class Display:
@@ -36,7 +35,9 @@ class Display:
             flux, 
             Num_levels, 
             Num_sum = 10,
-            Num_plots = 4
+            Num_plots = 4,
+            flux_start = 0.0,
+            flux_stop = 1.0
             ):
 
         ### EJ: float of JJ energy
@@ -55,6 +56,10 @@ class Display:
         self.Num_sum = Num_sum
         ### Num_plots: int of the number plots on figure
         self.Num_plots = Num_plots
+        ### flux_start is the starting flux for flux sweep
+        self.flux_start = flux_start
+        ### flux_stop is the stopping flux for flux sweep
+        self.flux_stop = flux_stop
 
 
         # creating subplots given number requested
@@ -149,7 +154,7 @@ class Display:
         self.flux_sweep_num = plot_num
 
         self.subplots[plot_num].cla()
-        phi_ext = np.linspace(0.0, 1.0, 100)
+        phi_ext = np.linspace(self.flux_start, self.flux_stop, 100)
         
         energy_spec = self.fluxonium.get_spectrum_vs_paramvals(
             'flux',
@@ -179,7 +184,8 @@ class Display:
     def g_mat_plot(self, 
             plot_num = 0, 
             coupling_level = 0, 
-            beta_phi = 0.2
+            beta_phi = 0.2,
+            fontsize = 10
             ):
         # if method is called set to true
         self.g_mat_bool = True
@@ -198,6 +204,7 @@ class Display:
 
         # g_const is the coupling constant factor
         g_const = self.cav_freq * beta_phi * (2.0/np.pi)
+        g_const = 1 # just finding matrix elements
 
         g_val_array = np.zeros([len(phi_ext), self.Num_levels])
         for i in range(0, self.Num_levels):
@@ -212,14 +219,21 @@ class Display:
         for i in range(0, self.Num_levels):
             self.subplots[plot_num].plot(
                 g_mat_array.param_vals,
-                g_val_array[:,i] * 1e3, # MHz units
-                '-'
+                g_val_array[:,i], # *1e3 MHz units
+                '-',
+                label = 'level: '+str(i)
                 )
 
-        self.subplots[plot_num].set_xlabel(r'$\varphi_{ext}/2\pi$')
-        self.subplots[plot_num].set_ylabel('matix element (MHz)')
+        self.subplots[plot_num].set_xlabel(r'$\varphi_{ext}/2\pi$',
+            fontsize=fontsize)
+        ### defining y axis name
+        yaxis = r'$| \langle$'+str(coupling_level)+r'$|\hat{n}| i \rangle |$'
+        self.subplots[plot_num].set_ylabel(yaxis, 
+            fontsize=fontsize)
         self.subplots[plot_num].set_title(
-            'coupling level ' + str(coupling_level))
+            'coupling level ' + str(coupling_level), 
+            fontsize=fontsize)
+        self.subplots[plot_num].legend()
 
 
     ## method to plot wave functions on the hamiltonian
@@ -257,8 +271,18 @@ class Display:
             energy_scaled = eigen_vals[i] - eigen_vals[0]
             self.subplots[plot_num].plot(
                 wavefunc.basis_labels / np.pi,
-                wavefunc.amplitudes + energy_scaled, 
-                '-'
+                ### adding in scaling factor for viewing purpose
+                wavefunc.amplitudes*4.0 + energy_scaled, 
+                '-',
+                linewidth = 2.0
+                )
+
+            # plotting lines where wavefunctions asumptote
+            self.subplots[plot_num].plot(
+                wavefunc.basis_labels / np.pi,
+                wavefunc.amplitudes*0.0 + energy_scaled, 
+                'k-',
+                linewidth = 0.5
                 )
 
         # plot potential
@@ -270,10 +294,10 @@ class Display:
         self.subplots[plot_num].plot(
             phi_range / np.pi,
             potential,
-            'k-'
+            'k-',
+            linewidth = 2.0
             )
             
-
         self.subplots[plot_num].set_xlabel(r'$\varphi / \pi$')
         self.subplots[plot_num].set_ylabel('Energy (GHz)')
         self.subplots[plot_num].set_title('wave functions')
@@ -370,7 +394,7 @@ class Display:
     #
     def EL_change(self, text):
        self.EL = float(text)
-       self.fluxonium.EC = self.EL
+       self.fluxonium.EL = self.EL
        self.update()
 
 
@@ -406,27 +430,3 @@ class Display:
     def show(self):
         plt.show()
 
-
-#########################################################
-### testing with a quick driver
-
-display = Display(
-    EJ = 8.34,
-    EC = 1.15,
-    EL = 0.45,
-    cav_freq = 6.0,
-    flux = 0.75, 
-    Num_levels = 5,
-    Num_sum = 10,
-    Num_plots = 2
-    )
-
-display.place_buttons()
-
-display.Flux_sweep_plot(plot_num = 0)
-display.wavefunction_plot(plot_num = 1)
-### display.Raman_plot(plot_num = 0)
-### display.g_mat_plot(plot_num = 2, coupling_level = 0)
-### display.g_mat_plot(plot_num = 3, coupling_level = 1)
-
-display.show()

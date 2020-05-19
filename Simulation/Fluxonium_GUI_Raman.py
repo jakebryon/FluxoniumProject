@@ -809,7 +809,7 @@ def plot(
 
     fluxoniumLevels(EC, EJ, EL, cavfreq)
     # commenting out secondary plots
-    fluxoniumRamanCavity(EC, EJ, EL, cavfreq)
+    #fluxoniumRamanCavity(EC, EJ, EL, cavfreq)
     fluxoniumcouplingPlots(EC, EJ, EL, cavfreq)
     fluxoniumChiShift(EC, EJ, EL, cavfreq)
 
